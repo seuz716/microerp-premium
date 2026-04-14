@@ -370,6 +370,142 @@
       border-radius: 8px;
     }
     @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Success Modal */
+    #success-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    #success-modal.active {
+      display: flex;
+    }
+
+    .success-modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      padding: 2rem;
+      border-radius: 24px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+      max-width: 450px;
+      backdrop-filter: blur(12px);
+    }
+
+    .success-modal-content h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .sale-details {
+      background: rgba(16, 185, 129, 0.1);
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      text-align: left;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      color: var(--text-muted);
+    }
+
+    .detail-value {
+      color: var(--text-main);
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .btn-reset {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-reset:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Alert/Toast System */
+    .alert-toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      max-width: 400px;
+      z-index: 2500;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .alert-content {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .alert-success { border-left: 4px solid var(--primary); }
+    .alert-error { border-left: 4px solid var(--danger); }
+    .alert-warning { border-left: 4px solid var(--warning); }
+
+    @media (max-width: 640px) {
+      .alert-toast {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+      }
+
+      .success-modal-content {
+        max-width: 90vw;
+      }
+    }
   </style>
 </head>
   <!-- Global Loader -->
@@ -584,6 +720,30 @@
       <div class="search-results" id="search-results-list">
         <!-- Results here -->
       </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal">
+    <div class="success-modal-content">
+      <h2><i data-lucide="check-circle"></i> ¡Venta Registrada!</h2>
+      <div class="sale-details">
+        <div class="detail-row">
+          <span class="detail-label">ID de Venta:</span>
+          <span class="detail-value" id="modal-sale-id">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Total:</span>
+          <span class="detail-value" id="modal-sale-total" style="color: var(--primary); font-size: 1.2em;">$0.00</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Fecha y Hora:</span>
+          <span class="detail-value" id="modal-sale-date">-</span>
+        </div>
+      </div>
+      <button class="btn-reset" onclick="resetSaleFlow()">
+        <i data-lucide="plus"></i> Nueva Venta
+      </button>
     </div>
   </div>
 
@@ -818,16 +978,49 @@
           setLoading(false);
           btn.innerText = 'PROCESAR VENTA';
           if (res.success) {
-            alert('¡Venta realizada!');
+            showSuccessModal(res.id, res.total);
             STATE.cart = [];
             renderCart();
             refreshAll();
-            switchView('dashboard');
           } else {
-            alert('Error: ' + res.message);
+            showAlert('Error: ' + res.message, 'error');
           }
         })
         .procesarVenta(STATE.cart);
+    }
+
+    function showSuccessModal(saleId, total) {
+      document.getElementById('modal-sale-id').innerText = saleId;
+      document.getElementById('modal-sale-total').innerText = `$${(total || 0).toFixed(2)}`;
+      document.getElementById('modal-sale-date').innerText = new Date().toLocaleString('es-ES');
+      document.getElementById('success-modal').classList.add('active');
+    }
+
+    function resetSaleFlow() {
+      document.getElementById('success-modal').classList.remove('active');
+      switchView('dashboard');
+    }
+
+    /**
+     * Alert/Toast System
+     */
+    function showAlert(message, type = 'info') {
+      const alertId = 'alert-' + Date.now();
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert-toast`;
+      alertDiv.id = alertId;
+      alertDiv.innerHTML = `
+        <div class="alert-content alert-${type}">
+          <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info'}"></i>
+          <span>${message}</span>
+        </div>
+      `;
+      document.body.appendChild(alertDiv);
+      lucide.createIcons();
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3500);
     }
 
     /**
