@@ -1,0 +1,47 @@
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Node (si se usa en futuro)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+logs/
+
+# Credentials & Secrets
+.env
+.env.local
+.env.*.local
+credentials.json
+token.json
+
+# Build & Dist
+dist/
+build/
+*.min.js
+*.min.css
+
+# OS
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Backup
+*.backup
+*.bak
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
