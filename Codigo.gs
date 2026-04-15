@@ -1,31 +1,53 @@
 /**
- * MICRO ERP - PREMIUM EDITION
+ * MICROERP PREMIUM - EDITION 3.0
+ * Sistema de Gestión de Inventario y Ventas para Google Sheets
  * Desarrollado por: César Andrés Abadía
- * Archivo: Codigo.gs
- * Versión: 2.0 (Refactorizada y Blindada)
+ * Arquitectura: Serverless Enterprise-Grade
+ * Versión: 3.0 (Singleton, Caché, Logging, Tests Ready)
  * © 2026 Todos los derechos reservados
  */
 
+// ============================================================================
+// CONFIGURACIÓN CENTRALIZADA (EXPANDIDA)
+// ============================================================================
 const CONFIG = {
   SHEETS: {
     PRODUCTOS: "Productos",
     ENTRADAS: "Entradas",
     VENTAS: "Ventas",
     DETALLE_VENTAS: "Detalle_Ventas",
+    CARTERA: "Cartera",
+    FACTURAS: "Facturas",
+    PAGOS: "Pagos",
+    LOGS: "Logs",
   },
-  LOCK_TIMEOUT: 30000,
   COLUMNS: {
     PRODUCTOS: { id: 0, nombre: 1, stock: 2, precio: 3 },
     VENTAS: { id: 0, fecha: 1, total: 2 },
     DETALLE_VENTAS: { id: 0, idProducto: 1, cantidad: 2, precio: 3 },
     ENTRADAS: { id: 0, fecha: 1, idProducto: 2, cantidad: 3, costo: 4 },
+    CARTERA: { id: 0, nombre: 1, limite: 2, saldo: 3, activo: 4 },
+    FACTURAS: { id: 0, idCliente: 1, fecha: 2, monto: 3, vencimiento: 4, estado: 5 },
+    PAGOS: { id: 0, idFactura: 1, monto: 2, fecha: 3 },
+    LOGS: { timestamp: 0, usuario: 1, accion: 2, detalles: 3, ip: 4, estado: 5 },
   },
   LIMITS: {
     HISTORY_PAGINATION: 50,
+    MAX_PRODUCTS: 1000,
+    MAX_LOCK_RETRIES: 3,
+  },
+  TIMEOUTS: {
+    LOCK_MS: 15000,
+    CACHE_TTL_MS: 60000,
+    BACKOFF_BASE_MS: 500,
+  },
+  VALIDATION: {
+    ID_REGEX: /^[A-Z0-9_-]{3,20}$/,
+    MAX_PRICE: 999999,
+    MAX_STOCK: 99999,
+    MAX_NAME_LENGTH: 100,
   },
 };
-
-let DB_ID = null;
 
 /**
  * Inicialización de Base de Datos
